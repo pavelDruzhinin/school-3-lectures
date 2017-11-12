@@ -1,0 +1,106 @@
+﻿@model IEnumerable<WebApplication2.Models.Company>
+
+@section scripts
+{
+    <script>
+        $('#Search').on('keyup paste',
+            function () {
+                console.log($(this).val());
+                var obj = {
+                    searchName: $(this).val()
+                };
+                $.ajax({
+                    type: 'POST',
+                    url: '/Companies/Search',
+                    data: JSON.stringify(obj),
+                    contentType: 'application/json; charset=UTF-8',
+                    success: function (response) {
+                        console.log(response);
+                        var trHtml = response.map(function (el) {
+                            return createTr(el);
+                        }).join("");
+                        $('#ourtable tbody').html(trHtml);
+                    },
+                    error: function (response) {
+                        console.log(response);
+                    }
+                });
+            });
+
+        function createTr(company) {
+            return '<tr><td>' +
+                company.Name +
+                '</td><td><a href="/Companies/Edit/' +
+                company.Id +
+                '">Edit</a> |<a href="/Companies/Details/' +
+                company.Id +
+                '">Details</a> |<a href="/Companies/Delete/' +
+                company.Id +
+                '">Delete</a> </td><td>TestMEssage</td></tr>';
+        }
+
+        $('#addCompanyButton').on('click',
+            function () {
+                var data = $('#addCompanyForm').serializeArray();
+                var obj = {
+                    Name: data[0].value
+                };
+                $.ajax({
+                    type: 'POST',
+                    url: '/Companies/CreateAjax',
+                    data: JSON.stringify(obj),
+                    contentType: 'application/json; charset=UTF-8',
+                    success: function (response) {
+                        console.log(response);
+                        obj.Id = response;
+                        $('#ourtable tbody').append(createTr(obj));
+                    },
+                    error: function (response) {
+                        console.log(response);
+                    }
+                });
+            });
+    </script>
+}
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<form id="addCompanyForm">
+    <input id="Name" name="Name" type="text" />
+    <button id="addCompanyButton" type="button">Create Company</button>
+</form>
+
+<input class="form-control" style="margin: 15px" id="Search" name="Search" type="text" />
+<table class="table" id="ourtable">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { id = item.Id, param1 = "Param1", param2 = "Param2" }) |
+                    @Html.ActionLink("Details", "Details", new { id = item.Id }) |
+                    @Html.ActionLink("Delete", "Delete", new { id = item.Id })
+                </td>
+                <td>TestMEssage</td>
+            </tr>
+        }
+    </tbody>
+</table>
